@@ -24,6 +24,12 @@ class ModelUser extends Model
         parent::__construct();
     }
     // CRUD
+    // Get All Users
+    public function getAllUsers(): array
+    {
+        $users = $this->getAll();
+        return $users;
+    }
     // Get User by Id
     public function getUser(): array
     {

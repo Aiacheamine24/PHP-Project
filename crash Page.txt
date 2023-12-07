@@ -1,0 +1,29 @@
+crash Page
+
+tbody
+<?php
+            // Remplacer "getAllCommandes" par la fonction qui récupère toutes les commandes depuis la base de données
+            $commandes = getAllCommandes();
+
+            foreach ($commandes as $commande) {
+                ?>
+                <tr>
+                    <th scope="row"><?= $commande['id']; ?></th>
+                    <td><?= $commande['utilisateur_id']; ?></td>
+                    <td><?= $commande['prix_total']; ?></td>
+                    <td><?= $commande['date_commande']; ?></td>
+                    <td>
+                        <form action="../commande_details.php" method="post">
+                            <input type="hidden" name="commande_id" value="<?= $commande['id']; ?>">
+                            <button type="submit" class="btn btn-info">
+                                Voir Détails
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                <?php
+            }
+            ?>
+
+
+            

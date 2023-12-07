@@ -29,7 +29,7 @@ class Model extends ConnectDB
             return $this->conn->query($sql);
         } catch (\Throwable $th) {
             //throw $th;
-            die('Erreur : ' . $th->getMessage());
+            echo ('Erreur : ' . $th->getMessage());
         }
     }
     // CRUD
