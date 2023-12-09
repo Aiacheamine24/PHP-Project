@@ -10,4 +10,9 @@ class ClothesFunctions // Make sure to replace YourControllerName with the actua
     {
         return ModelClothe::getAllClothes(); // Corrected method name
     }
+    public static function getClotheById($clothes_id): array
+    {
+        $c = ModelClothe::getClotheById($clothes_id); // Corrected method name
+        return $c;
+    }
 }

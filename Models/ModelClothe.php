@@ -53,18 +53,51 @@ class ModelClothe extends Model
     // Get All Clothes
     public static function getAllClothes(): array
     {
+        $clothes = (new self())->requete("SELECT clothes.clothes_id, clothes.name, clothes.price, clothes.size, clothes.description, photos.photo_id, photos.file_path FROM clothes LEFT JOIN photos ON clothes.clothes_id = photos.clothes_id")->fetchAll();
+
+        // Organiser les résultats par clothes_id
+        $groupedClothes = [];
+        foreach ($clothes as $row) {
+            $clothesId = $row['clothes_id'];
+
+            // Ajouter le vêtement s'il n'est pas encore dans le tableau
+            if (!isset($groupedClothes[$clothesId])) {
+                $groupedClothes[$clothesId] = [
+                    'clothes_id' => $row['clothes_id'],
+                    'name' => $row['name'],
+                    'price' => $row['price'],
+                    'size' => $row['size'],
+                    'description' => $row['description'],
+                    'photos' => [], // Créer un tableau pour stocker les photos
+                ];
+            }
+
+            // Ajouter la photo au tableau des photos pour le vêtement
+            $groupedClothes[$clothesId]['photos'][] = [
+                'photo_id' => $row['photo_id'],
+                'file_path' => $row['file_path'],
+            ];
+        }
+
+        return array_values($groupedClothes); // Retourner les valeurs du tableau associatif pour obtenir un tableau numérique
+    }
+    // Get Clothes By Id
+    public static function getClotheById($clotheId): array
+    {
         // On recupere les données de la table clothes
-        $clothes = (new self())->getAll();
+        $clothes = (new self())->requete("SELECT clothes.clothes_id, clothes.name, clothes.price, clothes.size, clothes.description, photos.photo_id, photos.file_path FROM clothes LEFT JOIN photos ON clothes.clothes_id = photos.clothes_id WHERE clothes.clothes_id = {$clotheId}")->fetchAll();
+        // On verifie si $clothes existe pas
+        if (!$clothes) {
+            return [];
+        }
         // On recupere les données de la table photos directement avec la fonction requete
-        $photos = (new self())->requete("SELECT * FROM photos")->fetchAll();
+        $photo = (new self())->requete("SELECT * FROM photos WHERE clothes_id = {$clothes[0]['clothes_id']}")->fetchAll();
         // On fusionne les deux tableaux
-        $clothes = array_map(function ($clothe) use ($photos) {
-            $clothe['photo'] = array_filter($photos, fn ($photo) => $photo['clothes_id'] === $clothe['clothes_id'])[0] ?? null;
-            return $clothe;
-        }, $clothes);
+        $clothes = array_merge($clothes[0], ['photo' => $photo[0] ?? null]);
         // On retourne les données
         return $clothes ? $clothes : [];
     }
+
     // Insert Clothe
     public static function insertClothe(array $data): int
     {
@@ -72,14 +105,16 @@ class ModelClothe extends Model
         $clotheId = (new self([
             'name' => $data['name'],
             'price' => $data['price'],
-            'size' => $data['size'],
             'description' => $data['description']
         ]))->insertHydrate();
-        // On insere les données de la table photos (clothes_id, file_path)
-        (new self([
-            'clothes_id' => $clotheId,
-            'file_path' => $data['file_path']
-        ]))->setTable("photos")->insertHydrate();
+        // On insere les données de la table photos qui recoit un tableau d'image (file_path) et l'ID du vêtement
+        foreach ($data['file_path'] as $file_path) {
+            // Pour chaque image, on cree une instance de la classe ModelClothe avec les données de la table photos
+            (new self([
+                'clothes_id' => $clotheId,
+                'file_path' => $file_path
+            ]))->setTable("photos")->insertHydrate();
+        }
         // On retourne l'ID du vêtement
         return $clotheId;
     }

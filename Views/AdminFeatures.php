@@ -11,7 +11,7 @@ use App\Autoloader;
 Autoloader::register();
 require_once __DIR__ . '/../Controllers/UsersFunctions.php';
 $users = UsersFunctions::getAllUsers();
-var_dump($users);
+
 $products = [];
 // for ($i = 0; $i < count($products); $i++) {
 //     var_dump($products[$i]);
@@ -43,27 +43,34 @@ if (isset($_POST['ajouter_vetement'])) {
 
     // Traiter les fichiers d'images
     $photoPaths = [];
-    $targetDirectory = "../img/"; // Adjust this if necessary
+    // Path to the directory where the images will be stored
+    $targetDirectory = __DIR__ . '\..\Public\images\\';
 
     foreach ($_FILES['photos']['name'] as $key => $filename) {
-        $targetPath = $targetDirectory . basename($filename);
+        // $targetPath = $targetDirectory . basename($filename);
         // Move the uploaded file to the target directory
-        if (move_uploaded_file($_FILES['photos']['tmp_name'][$key], $targetPath)) {
-            $photoPaths[] = $targetPath; // Save the relative path to the list
-        } else {
-            echo "Erreur lors de l'upload de l'image: " . $filename;
-            exit();
-        }
+        // if (move_uploaded_file($_FILES['photos']['tmp_name'][$key], $targetPath)) {
+        $photoPaths[] = $filename; // Save the relative path to the list
+        // } else {
+        // echo "Erreur lors de l'upload de l'image: " . $filename;
+        // exit();
+        // }
     }
 
-    // // Appeler la fonction pour ajouter le vêtement à la base de données
-    // if (ajouterVetement($nom, $prix, $description, $photoPaths)) {
-    //     // Rediriger vers une page de succès ou afficher un message de succès
-    //     echo "Vêtement ajouté avec succès.";
-    // } else {
-    //     // Afficher un message d'erreur si l'ajout du vêtement a échoué
-    //     echo "Erreur lors de l'ajout du vêtement.";
-    // }
+    ////////////////////////////// Il Faut Faire Le Controller //////////////////////////////
+    // Appeler la fonction pour ajouter le vêtement à la base de données
+    if (ModelClothe::insertClothe([
+        'name' => $nom,
+        'price' => $prix,
+        'description' => $description,
+        'file_path' => $photoPaths
+    ])) {
+        // Rediriger vers une page de succès ou afficher un message de succès
+        echo "Vêtement ajouté avec succès.";
+    } else {
+        // Afficher un message d'erreur si l'ajout du vêtement a échoué
+        echo "Erreur lors de l'ajout du vêtement.";
+    }
 }
 
 if (isset($_POST['modifier_vetement'])) {
@@ -253,7 +260,6 @@ if (isset($_POST['supprimer_vetement'])) {
                     <th scope="col">Name</th>
                     <th scope="col">Email</th>
                     <th scope="col">Telephone</th>
-                    <th scope="col">Admin</th>
                     <th scope="col">Actions</th>
                 </tr>
             </thead>
@@ -279,7 +285,7 @@ if (isset($_POST['supprimer_vetement'])) {
                             ?>
                         </td>
                         <td>
-                            <a href="../edit_user.php?id=<?= $user['id']; ?>" class="btn btn-primary">
+                            <a href="../edit_user.php?id=<?= $user['user_id']; ?>" class="btn btn-primary">
                                 <i class="fas fa-pencil-alt"></i> Edit
                             </a>
                         </td>

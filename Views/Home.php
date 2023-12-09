@@ -1,37 +1,32 @@
 <?php
-// function getTotalProducts()
-// {
-//     $connexion = connectDb();
-//     $result = $connexion->query("SELECT COUNT(*) as total FROM vetements");
-//     return $result->fetch_assoc()['total'];
-// }
-
-// $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-// $products_per_page = 12;
-// $offset = ($page - 1) * $products_per_page;
-
-// $vetements = getLimitedProducts($products_per_page, $offset);
-// $total_products = getTotalProducts();
-
-// $utilisateur = isset($_SESSION['utilisateur']) ? $_SESSION['utilisateur'] : null;
-// $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true : false;
-?>
-<?php
 
 use App\Models\ModelClothe;
 
-$vetements = ModelClothe::getAllClothes();
-
+function getLimitedProducts($allClothes, $limit = 20, $offset = 0)
+{
+    $start = $offset;
+    $end = $offset + $limit;
+    return array_slice($allClothes, $start, $end);
+}
+///////////////////////// CONTROLER /////////////////////////
+$allClothes = ModelClothe::getAllClothes(); // Assuming getAllClothes returns all products
+$products_per_page = 12; // Adjusted to limit to 20 products per page
 $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
-$products_per_page = 12;
 $offset = ($page - 1) * $products_per_page;
 
-// $vetements = getLimitedProducts($products_per_page, $offset);
-$total_products = 0;
+$vetements = getLimitedProducts($allClothes, $products_per_page, $offset);
+$total_products = count($allClothes);
 
 $utilisateur = isset($_SESSION['user']) ? $_SESSION['user'] : null;
-var_dump($utilisateur);
 $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true : false;
+
+// echo '<br>';
+// echo '<br>';
+// echo '<br>';
+// echo '<br>';
+// var_dump($vetements[0]['photos'][0]['file_path']);
+// echo '<br>';
+// echo './Public/images/' . $vetements[0]['photos'][0]['file_path'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,15 +117,15 @@ $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true :
         <div class="row">
             <?php foreach ($vetements as $vetement) : ?>
                 <div class="col-md-3">
-                    <a href="product_details.php?id=<?= htmlspecialchars($vetement['id']) ?>" style="text-decoration: none; color: inherit;">
+                    <a href="./Views/ProductDetails.php?id=<?= htmlspecialchars($vetement['clothes_id']) ?>" style="text-decoration: none; color: inherit;">
                         <div class="card mb-4">
-                            <img src="./img/<?= htmlspecialchars($vetement['photos'][0]) ?>" alt="<?= htmlspecialchars($vetement['nom']) ?>" class="card-img-top">
+                            <img src="./Public/images/<?= htmlspecialchars($vetement['photos'][0]['file_path']) ?>" alt="<?= htmlspecialchars($vetement['name']) ?>" class="card-img-top">
                             <div class="card-body">
                                 <h5 class="card-title">
-                                    <?= htmlspecialchars($vetement['nom']) ?>
+                                    <?= htmlspecialchars($vetement['name']) ?>
                                 </h5>
                                 <p class="card-text">Prix:
-                                    <?= htmlspecialchars($vetement['prix']) ?>€
+                                    <?= htmlspecialchars($vetement['price']) ?>€
                                 </p>
                             </div>
                         </div>
@@ -138,6 +133,7 @@ $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true :
                 </div>
             <?php endforeach; ?>
         </div>
+
 
         <nav aria-label="Page navigation">
             <ul class="pagination justify-content-center">
