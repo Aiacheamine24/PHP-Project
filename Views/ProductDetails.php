@@ -14,27 +14,16 @@ $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true :
 if (isset($_GET['id'])) {
     $product_id = $_GET['id'];
     $product = ClothesFunctions::getClotheById($product_id);
-    var_dump($product);
-    echo '<br>';
-
-    foreach ($product as $key => $value) {
-        if ($key === 'file_path') {
-            echo '<br>' . $value . '<br>';
-        }
-    }
 } else {
     header("Location: index.php");
     exit;
 }
-
 if (isset($_POST['logout'])) {
     session_destroy();
     header("Location: index.php");
     exit;
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -63,7 +52,6 @@ if (isset($_POST['logout'])) {
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <?php if (isset($utilisateur)) : ?>
@@ -111,45 +99,25 @@ if (isset($_POST['logout'])) {
             </ul>
         </div>
     </nav>
-
-    <style>
-        .carousel-control-prev,
-        .carousel-control-next {
-            width: auto;
-            background: none;
-        }
-
-        .carousel-control-prev-icon,
-        .carousel-control-next-icon {
-            background-color: rgba(0, 0, 0, 0.5);
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-        }
-
-        .carousel-control-prev {
-            left: -10%;
-        }
-
-        .carousel-control-next {
-            right: -10%;
-        }
-    </style>
-
+    <!-- Product Details -->
     <div class="container mt-5">
-        <h2>
-            <?= htmlspecialchars($product['name']) ?>
-        </h2>
+        <h2><?= htmlspecialchars($product['name']) ?></h2>
+
+        <!-- Product Images Carousel -->
         <div class="product-image">
             <div id="productCarousel" class="carousel slide" data-ride="carousel">
                 <div class="carousel-inner">
-                    <?php $isActive = true;
-                    foreach ($product['photo'] as $photo) : ?>
+                    <?php
+                    $isActive = true;
+                    foreach ($product['photos'] as $photo) :
+                    ?>
                         <div class="carousel-item <?= $isActive ? 'active' : '' ?>">
-                            <img src="../Public/images/<? htmlspecialchars($photo['file_path']) ?>" class="d-block w-100" alt="<?= htmlspecialchars($product['name']) ?>">
+                            <img src="../Public/images/<?= htmlspecialchars($photo['file_path']) ?>" class="d-block w-100" alt="<?= htmlspecialchars($product['name']) ?>">
                         </div>
-                    <?php $isActive = false;
-                    endforeach; ?>
+                    <?php
+                        $isActive = false;
+                    endforeach;
+                    ?>
                 </div>
                 <a class="carousel-control-prev" href="#productCarousel" role="button" data-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -162,6 +130,7 @@ if (isset($_POST['logout'])) {
             </div>
         </div>
 
+        <!-- Product Details Form -->
         <form action="addToCart.php" method="post">
             <input type="hidden" name="product_id" value="<?= $product_id ?>">
 
@@ -180,22 +149,20 @@ if (isset($_POST['logout'])) {
                 </select>
             </div>
 
-            <p><strong>Prix:</strong>
-                <?= htmlspecialchars($product['price']) ?>€
-            </p>
-            <p><strong>Description:</strong>
-                <?= htmlspecialchars($product['description']) ?>
-            </p>
+            <p><strong>Prix:</strong> <?= htmlspecialchars($product['price']) ?>€</p>
+            <p><strong>Description:</strong> <?= htmlspecialchars($product['description']) ?></p>
             <button type="submit" class="btn btn-primary">
                 <i class="fas fa-shopping-cart"></i> Ajouter au panier
             </button>
         </form>
     </div>
 
+    <!-- Footer -->
     <footer class="bg-dark text-white mt-5 p-4 text-center">
         © 2023 E-commerce Site. All Rights Reserved.
     </footer>
 
+    <!-- Bootstrap JavaScript Dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

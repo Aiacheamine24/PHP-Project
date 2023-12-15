@@ -84,19 +84,37 @@ class ModelClothe extends Model
     // Get Clothes By Id
     public static function getClotheById($clotheId): array
     {
-        // On recupere les données de la table clothes
+        // On récupère les données de la table clothes
         $clothes = (new self())->requete("SELECT clothes.clothes_id, clothes.name, clothes.price, clothes.size, clothes.description, photos.photo_id, photos.file_path FROM clothes LEFT JOIN photos ON clothes.clothes_id = photos.clothes_id WHERE clothes.clothes_id = {$clotheId}")->fetchAll();
-        // On verifie si $clothes existe pas
+
+        // On vérifie si $clothes n'existe pas
         if (!$clothes) {
             return [];
         }
-        // On recupere les données de la table photos directement avec la fonction requete
-        $photo = (new self())->requete("SELECT * FROM photos WHERE clothes_id = {$clothes[0]['clothes_id']}")->fetchAll();
-        // On fusionne les deux tableaux
-        $clothes = array_merge($clothes[0], ['photo' => $photo[0] ?? null]);
-        // On retourne les données
-        return $clothes ? $clothes : [];
+
+        // On initialise le tableau des photos
+        $photos = [];
+
+        // On parcourt les résultats pour récupérer toutes les photos liées au vêtement
+        foreach ($clothes as $clothe) {
+            // On ajoute chaque photo au tableau des photos
+            $photos[] = [
+                'photo_id' => $clothe['photo_id'],
+                'file_path' => $clothe['file_path']
+            ];
+        }
+
+        // On retourne les données avec le tableau complet des photos
+        return [
+            'clothes_id' => $clothes[0]['clothes_id'],
+            'name' => $clothes[0]['name'],
+            'price' => $clothes[0]['price'],
+            'size' => $clothes[0]['size'],
+            'description' => $clothes[0]['description'],
+            'photos' => $photos
+        ];
     }
+
 
     // Insert Clothe
     public static function insertClothe(array $data): int

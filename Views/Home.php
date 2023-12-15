@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\ClothesFunctions;
 use App\Models\ModelClothe;
 
 function getLimitedProducts($allClothes, $limit = 20, $offset = 0)
@@ -8,8 +9,7 @@ function getLimitedProducts($allClothes, $limit = 20, $offset = 0)
     $end = $offset + $limit;
     return array_slice($allClothes, $start, $end);
 }
-///////////////////////// CONTROLER /////////////////////////
-$allClothes = ModelClothe::getAllClothes(); // Assuming getAllClothes returns all products
+$allClothes = ClothesFunctions::getAllClothes(); // Assuming getAllClothes returns all products
 $products_per_page = 12; // Adjusted to limit to 20 products per page
 $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
 $offset = ($page - 1) * $products_per_page;

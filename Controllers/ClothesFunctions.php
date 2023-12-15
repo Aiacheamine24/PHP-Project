@@ -8,11 +8,15 @@ class ClothesFunctions // Make sure to replace YourControllerName with the actua
 {
     public static function getAllClothes()
     {
-        return ModelClothe::getAllClothes(); // Corrected method name
+        return ModelClothe::getAllClothes();
     }
     public static function getClotheById($clothes_id): array
     {
-        $c = ModelClothe::getClotheById($clothes_id); // Corrected method name
+        $c = ModelClothe::getClotheById($clothes_id);
         return $c;
+    }
+    public static function insertOne(array $data): int
+    {
+        return ModelClothe::insertClothe($data);
     }
 }

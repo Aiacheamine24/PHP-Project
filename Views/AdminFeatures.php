@@ -7,6 +7,7 @@ use App\Models\ModelUser;
 require_once __DIR__ . '/../autoloader.php';
 
 use App\Autoloader;
+use App\Controllers\ClothesFunctions;
 
 Autoloader::register();
 require_once __DIR__ . '/../Controllers/UsersFunctions.php';
@@ -56,10 +57,8 @@ if (isset($_POST['ajouter_vetement'])) {
         // exit();
         // }
     }
-
-    ////////////////////////////// Il Faut Faire Le Controller //////////////////////////////
     // Appeler la fonction pour ajouter le vêtement à la base de données
-    if (ModelClothe::insertClothe([
+    if (ClothesFunctions::insertOne([
         'name' => $nom,
         'price' => $prix,
         'description' => $description,
