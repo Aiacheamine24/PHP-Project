@@ -27,6 +27,7 @@ $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true :
 // var_dump($vetements[0]['photos'][0]['file_path']);
 // echo '<br>';
 // echo './Public/images/' . $vetements[0]['photos'][0]['file_path'];
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,7 +68,7 @@ $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true :
                 <?php if (isset($utilisateur)) : ?>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="./cart.php">
+                        <a class="nav-link" href="./Views/cart.php">
                             <i class="fas fa-shopping-cart"></i>
                             Cart
                             <?php
@@ -86,15 +87,9 @@ $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true :
                                 <a class="dropdown-item" href="#">User: Admin</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="./Views/AdminFeatures.php">Admin Features</a>
-                                <a class="dropdown-item" href="#">
-                                    Edit Profile
-                                </a>
                             <?php else : ?>
                                 <a class="dropdown-item" href="#">
                                     <?= htmlspecialchars($utilisateur['username']); ?>
-                                </a>
-                                <a class="dropdown-item" href="#">
-                                    Edit Profile
                                 </a>
                             <?php endif; ?>
                             <div class="dropdown-divider"></div>

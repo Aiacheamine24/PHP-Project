@@ -1,82 +1,197 @@
-CREATE DATABASE projet_eco_php;
-USE projet_eco_php;
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Dec 16, 2023 at 07:21 PM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.0.28
 
--- Création des tables
-CREATE TABLE users (
-    user_id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    user_type ENUM('admin', 'client') NOT NULL
-);
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
 
-CREATE TABLE commands (
-    command_id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    total_price DECIMAL(10, 2) NOT NULL,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
 
-CREATE TABLE clothes (
-    clothes_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    size VARCHAR(10) NOT NULL,
-    description TEXT
-);
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
 
-CREATE TABLE command_items (
-    command_item_id INT PRIMARY KEY AUTO_INCREMENT,
-    command_id INT,
-    clothes_id INT,
-    quantity INT NOT NULL,
-    FOREIGN KEY (command_id) REFERENCES commands(command_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (clothes_id) REFERENCES clothes(clothes_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+--
+-- Database: `projet_eco_php`
+--
 
-CREATE TABLE photos (
-    photo_id INT PRIMARY KEY AUTO_INCREMENT,
-    clothes_id INT,
-    file_path VARCHAR(255) NOT NULL,
-    FOREIGN KEY (clothes_id) REFERENCES clothes(clothes_id) ON DELETE CASCADE ON UPDATE CASCADE
-);
+-- --------------------------------------------------------
 
--- Insertion des données
+--
+-- Table structure for table `clothes`
+--
 
--- Utilisateurs
-INSERT INTO users (username, password, email, user_type) VALUES
-('admin1', 'hashed_admin_password1', 'admin1@example.com', 'admin'),
-('client1', 'hashed_client_password1', 'client1@example.com', 'client'),
-('client2', 'hashed_client_password2', 'client2@example.com', 'client'),
-('client3', 'hashed_client_password3', 'client3@example.com', 'client');
+CREATE TABLE `clothes` (
+  `clothes_id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `price` decimal(10,2) NOT NULL,
+  `size` varchar(10) NOT NULL,
+  `description` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Commandes
-INSERT INTO commands (user_id, total_price) VALUES
-(2, 150.00),
-(3, 80.00),
-(4, 200.00),
-(2, 120.00);
+--
+-- Dumping data for table `clothes`
+--
+-- --------------------------------------------------------
 
--- Vêtements
-INSERT INTO clothes (name, price, size, description) VALUES
-('T-shirt', 25.00, 'M', 'Cotton T-shirt'),
-('Jeans', 50.00, '32', 'Slim-fit Jeans'),
-('Hoodie', 30.00, 'L', 'Fleece Hoodie'),
-('Dress Shirt', 45.00, 'M', 'Formal Dress Shirt');
+--
+-- Table structure for table `commands`
+--
 
--- Command Items (Associations entre commandes et vêtements)
-INSERT INTO command_items (command_id, clothes_id, quantity) VALUES
-(1, 1, 2),
-(1, 2, 1),
-(2, 3, 3),
-(3, 4, 2),
-(4, 1, 1),
-(4, 3, 2);
+CREATE TABLE `commands` (
+  `command_id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `total_price` decimal(10,2) NOT NULL,
+  `order_date` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Photos
-INSERT INTO photos (clothes_id, file_path) VALUES
-(1, '/images/tshirt.jpg'),
-(2, '/images/jeans.jpg'),
-(3, '/images/hoodie.jpg'),
-(4, '/images/dressshirt.jpg');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `command_items`
+--
+
+CREATE TABLE `command_items` (
+  `command_item_id` int(11) NOT NULL,
+  `command_id` int(11) DEFAULT NULL,
+  `clothes_id` int(11) DEFAULT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `command_items`
+--
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `photos`
+--
+
+CREATE TABLE `photos` (
+  `photo_id` int(11) NOT NULL,
+  `clothes_id` int(11) DEFAULT NULL,
+  `file_path` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `photos`
+-
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `user_id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `user_type` enum('admin','client') DEFAULT 'client'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `clothes`
+--
+ALTER TABLE `clothes`
+  ADD PRIMARY KEY (`clothes_id`);
+
+--
+-- Indexes for table `commands`
+--
+ALTER TABLE `commands`
+  ADD PRIMARY KEY (`command_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `command_items`
+--
+ALTER TABLE `command_items`
+  ADD PRIMARY KEY (`command_item_id`),
+  ADD KEY `command_id` (`command_id`),
+  ADD KEY `clothes_id` (`clothes_id`);
+
+--
+-- Indexes for table `photos`
+--
+ALTER TABLE `photos`
+  ADD PRIMARY KEY (`photo_id`),
+  ADD KEY `clothes_id` (`clothes_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`user_id`),
+  ADD UNIQUE KEY `email` (`email`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `clothes`
+--
+ALTER TABLE `clothes`
+  MODIFY `clothes_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+
+--
+-- AUTO_INCREMENT for table `commands`
+--
+ALTER TABLE `commands`
+  MODIFY `command_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- AUTO_INCREMENT for table `command_items`
+--
+ALTER TABLE `command_items`
+  MODIFY `command_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `photos`
+--
+ALTER TABLE `photos`
+  MODIFY `photo_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `commands`
+--
+ALTER TABLE `commands`
+  ADD CONSTRAINT `commands_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `command_items`
+--
+ALTER TABLE `command_items`
+  ADD CONSTRAINT `command_items_ibfk_1` FOREIGN KEY (`command_id`) REFERENCES `commands` (`command_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `command_items_ibfk_2` FOREIGN KEY (`clothes_id`) REFERENCES `clothes` (`clothes_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `photos`
+--
+ALTER TABLE `photos`
+  ADD CONSTRAINT `photos_ibfk_1` FOREIGN KEY (`clothes_id`) REFERENCES `clothes` (`clothes_id`) ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

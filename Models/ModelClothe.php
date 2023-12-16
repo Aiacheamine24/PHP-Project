@@ -40,10 +40,13 @@ class ModelClothe extends Model
             return []; // Aucun critère spécifié, retourner un tableau vide
         }
         // On recupere les données de la table clothes
-        $clothes = $this->selectByCriteria($criteria)[0] ?? null;
+        $clothes = $this->getClotheById($criteria['clothes_id']);
         // On verifie si $clothes existe pas
         // On recupere les données de la table photos directement avec la fonction requete
-        $photo = $this->requete("SELECT * FROM photos WHERE clothes_id = {$clothes['clothes_id']}")->fetchAll();
+        $photo = [];
+        if ($clothes['clothes_id']) {
+            $photo = $this->requete("SELECT * FROM photos WHERE clothes_id = {$clothes['clothes_id']}")->fetchAll();
+        }
         $clothes = array_merge($clothes, ['photo' => $photo[0] ?? null]);
         // On hydrate l'objet
         $this->hydrate($clothes);
@@ -160,7 +163,7 @@ class ModelClothe extends Model
         // On récupère les données de la table photos directement avec la fonction requête
         $photo = (new self())->requete("SELECT * FROM photos WHERE clothes_id = {$clothe['clothes_id']}")->fetchAll();
         // On fusionne les deux tableaux
-        $clothe = array_merge($clothe, ['photo' => $photo[0] ?? null]);
+        $clothe = array_merge($clothe, ['photo' => $photo]);
         // On vérifie les données à mettre à jour
         $clothe['name'] = $data['name'] ?? $clothe['name'];
         $clothe['price'] = $data['price'] ?? $clothe['price'];

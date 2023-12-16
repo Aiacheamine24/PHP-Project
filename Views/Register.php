@@ -1,23 +1,29 @@
 <?php
-// Incure le Controller UsersFunctions.php
 require_once '../Controllers/UsersFunctions.php';
-// Incure le fichier Autoloader.php
+
 use App\Autoloader;
-// Dans vos fichiers où vous utilisez des classes sans les inclure manuellement
+
 require_once __DIR__ . '/../Autoloader.php';
 Autoloader::register();
-// Recuperer Email et password et appler le controller
+
 if (isset($_POST['inscription'])) {
     $email = $_POST['email'];
     $password = $_POST['password'];
     $username = $_POST['username'];
+
     try {
         $id = UsersFunctions::register($username, $email, $password);
         if ($id) {
             header('Location: login.php');
         }
+    } catch (\PDOException $e) {
+        if ($e->getCode() == '23000') {
+            $errorMessage = "L'adresse e-mail est déjà utilisée. Veuillez en choisir une autre.";
+        } else {
+            $errorMessage = "Une erreur s'est produite : " . $e->getMessage();
+        }
     } catch (\Throwable $th) {
-        echo $th->getMessage();
+        $errorMessage = "Une erreur inattendue s'est produite : " . $th->getMessage();
     }
 }
 ?>
@@ -69,6 +75,11 @@ if (isset($_POST['inscription'])) {
                 <input type="text" class="form-control" id="phone" name="phone" required>
             </div> -->
             <button type="submit" name="inscription" class="btn btn-primary">Inscription</button>
+            <?php
+            if (isset($errorMessage)) {
+                echo '<div class="alert alert-danger" role="alert">' . $errorMessage . '</div>';
+            }
+            ?>
         </form>
     </div>
 

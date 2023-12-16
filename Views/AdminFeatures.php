@@ -11,13 +11,11 @@ use App\Controllers\ClothesFunctions;
 
 Autoloader::register();
 require_once __DIR__ . '/../Controllers/UsersFunctions.php';
+require_once __DIR__ . '/../Controllers/CommandFunctions.php';
 $users = UsersFunctions::getAllUsers();
 
-$products = [];
-// for ($i = 0; $i < count($products); $i++) {
-//     var_dump($products[$i]);
-// }
-
+$products = ModelClothe::getAllClothes();
+$selectedProduct = null;
 
 $utilisateur = isset($_SESSION['user']) ? $_SESSION['user'] : null;
 $isAdmin = isset($_SESSION['isAdmin']) && $_SESSION['isAdmin'] === true ? true : false;
@@ -79,36 +77,68 @@ if (isset($_POST['modifier_vetement'])) {
     $prix = $_POST['prix'];
     $description = $_POST['description'];
 
-
     // Traiter les fichiers d'images s'ils sont présents
     $photos = [];
-    $uploadDir = "./img/"; // Répertoire où les images sont stockées
     if (isset($_FILES['photos'])) {
-        foreach ($_FILES['photos']['name'] as $fileName) {
-            if ($fileName) { // Vérifiez que le fichier a un nom
-                $photos[] = $uploadDir . $fileName; // Construisez le chemin relatif
+        foreach ($_FILES['photos']['name'] as $key => $fileName) {
+            if ($_FILES['photos']['error'][$key] == UPLOAD_ERR_OK) {
+                // Ajouter le nom du fichier au tableau $photos
+                $photos[] = $fileName;
             }
         }
     }
+    // Appeler la fonction pour modifier le vêtement dans la base de données
+    $updated = ModelClothe::updateClothe($idVetement, [
+        'name' => $nom,
+        'price' => $prix,
+        'description' => $description,
+        'file_path' => $photos
+    ]);
 
-    // // Appeler la fonction pour modifier le vêtement dans la base de données
-    // if (modifierVetement($idVetement, $nom, $prix, $description, $photos)) {
-    //     echo "Vêtement modifié avec succès.";
-    // } else {
-    //     echo "Erreur lors de la modification du vêtement.";
-    // }
+    if ($updated) {
+        echo "Vêtement modifié avec succès.";
+    } else {
+        echo "Erreur lors de la modification du vêtement.";
+    }
 }
+
 
 if (isset($_POST['supprimer_vetement'])) {
     // Récupérer les données du formulaire
     $idVetement = $_POST['id_vetement'];
 
-    // if (supprimervetement($idVetement)) {
-    //     echo "Vêtement supprimer avec succès.";
-    // } else {
-    //     echo "Erreur lors de la supprision du vêtement.";
-    // }
+    // Appeler la fonction pour supprimer le vêtement de la base de données
+    $deleted = ModelClothe::deleteClothe($idVetement);
+    if ($deleted === 1) {
+        echo "Vêtement supprimer avec succès.";
+    } else {
+        echo "Erreur lors de la supprision du vêtement.";
+    }
 }
+
+if (isset($_POST['set_admin'])) {
+    $userId = $_POST['user_id'];
+
+    $user = new ModelUser([
+        'user_id' => $userId,
+        'user_type' => 'admin'
+    ]);
+
+    // Appeler la fonction pour modifier le type de l'utilisateur
+    $updated = $user->updateUser();
+    echo "Utilisateur modifié avec succès. actualiser la page pour voir les changements.";
+}
+
+if (isset($_POST['delete_user'])) {
+    $userId = $_POST['user_id'];
+
+    $user = new ModelUser([
+        'user_id' => $userId
+    ]);
+    $updated = $user->deleteUser();
+    echo "Utilisateur supprimé avec succès. actualiser la page pour voir les changements.";
+}
+
 
 ?>
 
@@ -205,31 +235,31 @@ if (isset($_POST['supprimer_vetement'])) {
         <form method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label for="select_vetement">Sélectionner un vêtement :</label>
-                <select class="form-control" id="select_vetement" name="select_vetement" onchange="populateFields()">
+                <select class="form-control" id="select_vetement" name="id_vetement" onchange="populateFields()">
                     <option value="">-- Sélectionner un vêtement --</option>
                     <?php foreach ($products as $product) : ?>
-                        <option value="<?= $product['id']; ?>">
-                            <?= $product['nom'] . ' - ' . $product['prix'] . ' - ' . $product['description']; ?>
+                        <option value="<?= $product['clothes_id']; ?>">
+                            <?= $product['name'] . ' - ' . $product['price'] . ' - ' . $product['description']; ?>
+                            <?= $selectedProduct = $product; ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
-
             </div>
             <div class="form-group">
-                <label for="nom">Id : </label>
-                <input type="text" class="form-control" id="id" name="id_vetement">
+                <label for="id">Id : </label>
+                <input type="text" class="form-control" id="id" name="id_vetement" value="<?= isset($selectedProduct['clothes_id']) ? $selectedProduct['clothes_id'] : ''; ?>" readonly>
             </div>
             <div class="form-group">
                 <label for="nom">Nom :</label>
-                <input type="text" class="form-control" id="nom" name="nom">
+                <input type="text" class="form-control" id="nom" name="nom" value="<?= isset($selectedProduct['name']) ? $selectedProduct['name'] : ''; ?>">
             </div>
             <div class="form-group">
                 <label for="prix">Prix :</label>
-                <input type="text" class="form-control" id="prix" name="prix">
+                <input type="text" class="form-control" id="prix" name="prix" value="<?= isset($selectedProduct['price']) ? $selectedProduct['price'] : ''; ?>">
             </div>
             <div class="form-group">
                 <label for="description">Description :</label>
-                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                <textarea class="form-control" id="description" name="description" rows="3"><?= isset($selectedProduct['description']) ? $selectedProduct['description'] : ''; ?></textarea>
             </div>
             <div class="form-group">
                 <label for="photos">Photos :</label>
@@ -242,9 +272,19 @@ if (isset($_POST['supprimer_vetement'])) {
         <script>
             function populateFields() {
                 const select = document.getElementById("select_vetement");
-                const selectedId = select.value;
+                const selectedIndex = select.selectedIndex;
 
-                document.getElementById("id").value = selectedId;
+                // Vérifier si une option est sélectionnée
+                if (selectedIndex !== -1) {
+                    // Récupérer les données du produit sélectionné (stockées dans l'attribut value de l'option)
+                    const selectedValues = select.options[selectedIndex].value.split('|');
+
+                    // Remplir les champs du formulaire avec les valeurs du produit sélectionné
+                    document.getElementById("id").value = selectedValues[0];
+                    document.getElementById("nom").value = selectedValues[1];
+                    document.getElementById("prix").value = selectedValues[2];
+                    document.getElementById("description").value = selectedValues[3];
+                }
             }
         </script>
 
@@ -255,7 +295,7 @@ if (isset($_POST['supprimer_vetement'])) {
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
+                    <th scope="col"># ID</th>
                     <th scope="col">Name</th>
                     <th scope="col">Email</th>
                     <th scope="col">Telephone</th>
@@ -284,11 +324,20 @@ if (isset($_POST['supprimer_vetement'])) {
                             ?>
                         </td>
                         <td>
-                            <a href="../edit_user.php?id=<?= $user['user_id']; ?>" class="btn btn-primary">
-                                <i class="fas fa-pencil-alt"></i> Edit
-                            </a>
-                        </td>
+                            <form method="POST">
+                                <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
+                                <button type="submit" name="set_admin" class="btn btn-primary">
+                                    <i class="fas fa-pencil-alt"></i> Set admin
+                                </button>
+                            </form>
 
+                            <form method="POST">
+                                <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
+                                <button type="submit" name="delete_user" class="btn btn-danger">
+                                    <i class="fas fa-pencil-alt"></i> Delete
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
@@ -299,15 +348,29 @@ if (isset($_POST['supprimer_vetement'])) {
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
+                    <th scope="col"># ID</th>
                     <th scope="col">Utilisateur ID</th>
                     <th scope="col">Prix Total</th>
                     <th scope="col">Date Commande</th>
-                    <th scope="col">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                <!-- Crash Page : tbody-->
+                <?php
+                // Remplacer "getAllCommandes" par la fonction qui récupère toutes les commandes depuis la base de données
+                $commandes = CommandFunctions::getAll();
+
+                foreach ($commandes as $commande) {
+                ?>
+                    <tr>
+                        <th scope="row"><?= $commande['command_id']; ?></th>
+                        <td><?= $commande['user_id']; ?></td>
+                        <td><?= $commande['total_price']; ?></td>
+                        <td><?= $commande['order_date']; ?></td>
+                    </tr>
+                <?php
+                }
+                ?>
+
             </tbody>
         </table>
     </div>

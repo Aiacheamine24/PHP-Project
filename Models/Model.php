@@ -115,7 +115,7 @@ class Model extends ConnectDB
         // On fusionne les valeurs
         $valeurs = array_merge($valeurs, array_values($criteria));
         // Renvoi des résultats
-        return $this->requete($sql, $valeurs)->rowCount();
+        return $this->requete($sql, $valeurs)->rowCount() || 0;
     }
     // Update Hydrate
     public function updateHydrate($condition): int

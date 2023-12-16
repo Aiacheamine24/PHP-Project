@@ -23,6 +23,30 @@ if (isset($_POST['logout'])) {
     header("Location: index.php");
     exit;
 }
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $product_id = $_POST['product_id'];
+    $quantity = $_POST['quantity'];
+    $size = $_POST['size'];
+
+    $product_key = $product_id . "_" . $size;
+
+    if (!isset($_SESSION['cart'])) {
+        $_SESSION['cart'] = [];
+    }
+
+    if (isset($_SESSION['cart'][$product_key])) {
+        $_SESSION['cart'][$product_key]['quantity'] = $quantity;
+    } else {
+        $_SESSION['cart'][$product_key] = [
+            'product_id' => $product_id,
+            'quantity' => $quantity,
+            'size' => $size,
+            'price' => $product['price'],
+        ];
+    }
+    header("Location: ../index.php");
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -131,7 +155,7 @@ if (isset($_POST['logout'])) {
         </div>
 
         <!-- Product Details Form -->
-        <form action="addToCart.php" method="post">
+        <form method="post">
             <input type="hidden" name="product_id" value="<?= $product_id ?>">
 
             <div class="form-group">
